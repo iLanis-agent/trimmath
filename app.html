@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Trim math - calculators</title>
+<style>
+  :root { --accent: #8a6d1f; }
+  * { box-sizing: border-box; }
+  body { margin: 0; font-family: Georgia, 'Times New Roman', serif; background: #f8f5f2; color: #2c2620; line-height: 1.55; }
+  main { max-width: 1100px; margin: 0 auto; padding: 40px 20px 64px; }
+  h1 { font-size: 2rem; margin: 0 0 8px; color: var(--accent); }
+  .lede { margin: 0 0 14px; max-width: 640px; }
+  .note { background: #fff; border: 1px solid #e2d8cd; border-left: 4px solid var(--accent); border-radius: 6px; padding: 12px 16px; font-size: 0.9rem; margin: 0 0 28px; max-width: 720px; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 18px; }
+  section { background: #fff; border: 1px solid #e2d8cd; border-radius: 8px; padding: 20px 22px; }
+  h2 { font-size: 1.15rem; margin: 0 0 6px; }
+  .hint { font-size: 0.9rem; color: #8a7a68; margin: 0 0 14px; }
+  label { display: block; font-size: 0.9rem; margin: 10px 0 3px; }
+  input { width: 100%; padding: 8px 10px; font-size: 1rem; border: 1px solid #cfc0b0; border-radius: 5px; font-family: inherit; }
+  button { margin-top: 16px; width: 100%; padding: 11px; background: var(--accent); color: #fff; border: 0; border-radius: 6px; font-size: 1rem; cursor: pointer; font-family: inherit; }
+  button:hover { filter: brightness(1.08); }
+  .out { margin-top: 14px; font-size: 1rem; min-height: 1.4em; }
+  .out.err { color: #a32222; }
+  footer { max-width: 1100px; margin: 0 auto; padding: 0 20px 40px; font-size: 0.85rem; color: #b0a494; }
+  a { color: var(--accent); }
+</style>
+</head>
+<body>
+<main>
+  <h1>Trim math</h1>
+  <p class="lede">The room becomes a run, the run becomes boards, and the corners become cuts. Exact arithmetic, every borrowed number labeled.</p>
+  <div class="note">Illustrative arithmetic only. Real walls are never perfectly square; measure them, and buy a spare board.</div>
+  <div class="grid">
+    <section>
+      <h2>Run plan</h2>
+      <p class="hint">The walls name their length.</p>
+      <label for="r-l">Length (m)</label>
+      <input id="r-l" type="number" value="4" min="0" step="0.1">
+      <label for="r-w">Width (m)</label>
+      <input id="r-w" type="number" value="5" min="0" step="0.1">
+      <label for="r-d">Doorways (whole number)</label>
+      <input id="r-d" type="number" value="1" min="0" step="1">
+      <label for="r-m">Doorway width (m)</label>
+      <input id="r-m" type="number" value="0.9" min="0" step="0.05">
+      <button id="r-go">Measure the run</button>
+      <div class="out" id="r-out"></div>
+    </section>
+    <section>
+      <h2>Board plan</h2>
+      <p class="hint">The run becomes a shopping list.</p>
+      <label for="b-r">Run to trim (m)</label>
+      <input id="b-r" type="number" value="17.1" min="0" step="0.1">
+      <label for="b-b">Board length (m)</label>
+      <input id="b-b" type="number" value="2.4" min="0" step="0.1">
+      <label for="b-w">Labeled waste (%)</label>
+      <input id="b-w" type="number" value="10" min="0" step="1">
+      <button id="b-go">Count the boards</button>
+      <div class="out" id="b-out"></div>
+    </section>
+    <section>
+      <h2>Corner plan</h2>
+      <p class="hint">Every corner takes two cuts and a little length.</p>
+      <label for="c-i">Inside corners</label>
+      <input id="c-i" type="number" value="3" min="0" step="1">
+      <label for="c-o">Outside corners</label>
+      <input id="c-o" type="number" value="1" min="0" step="1">
+      <label for="c-a">Labeled extra a corner (cm)</label>
+      <input id="c-a" type="number" value="5" min="0" step="1">
+      <button id="c-go">Count the cuts</button>
+      <div class="out" id="c-out"></div>
+    </section>
+  </div>
+</main>
+<footer>Built by the app factory. <a href="index.html">About</a> &middot; <a href="https://github.com/iLanis-agent/trimmath">Source</a></footer>
+<script src="engine.js"></script>
+<script>
+function num(id){ return parseFloat(document.getElementById(id).value); }
+function show(id, r, render){
+  var el = document.getElementById(id);
+  if (r.error) { el.textContent = r.error; el.classList.add('err'); }
+  else { el.textContent = render(r); el.classList.remove('err'); }
+}
+document.getElementById('r-go').addEventListener('click', function(){
+  var a=[num('r-l'),num('r-w'),num('r-d'),num('r-m')];
+  show('r-out', TrimMath.runPlan.apply(null,a), function(r){ return TrimMath.renderRun.apply(null,[r].concat(a)); });
+});
+document.getElementById('b-go').addEventListener('click', function(){
+  var a=[num('b-r'),num('b-b'),num('b-w')];
+  show('b-out', TrimMath.boardPlan.apply(null,a), function(r){ return TrimMath.renderBoard.apply(null,[r].concat(a)); });
+});
+document.getElementById('c-go').addEventListener('click', function(){
+  var a=[num('c-i'),num('c-o'),num('c-a')];
+  show('c-out', TrimMath.cornerPlan.apply(null,a), function(r){ return TrimMath.renderCorner.apply(null,[r].concat(a)); });
+});
+</script>
+</body>
+</html>
